@@ -1,33 +1,20 @@
 const express = require('express');
-const User = require('../models/User');
+const {
+  getPlans,
+  buyPlan,
+  checkSubscription,
+  cancelSubscription,
+  legacySubscribe
+} = require('../controllers/subscriptionController');
 const { verifyToken } = require('../middleware/auth');
+const { buyPlanRules, handleValidation } = require('../utils/validation');
 
 const router = express.Router();
 
-// Subscribe (Mock activation)
-router.post('/subscribe', verifyToken, async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id);
-    user.isSubscribed = true;
-    await user.save();
-    
-    res.json({ message: 'Subscription activated!', user: { id: user._id, isSubscribed: user.isSubscribed } });
-  } catch (error) {
-    res.status(500).json({ message: 'Subscription failed.', error: error.message });
-  }
-});
-
-// Unsubscribe (for testing)
-router.post('/unsubscribe', verifyToken, async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id);
-    user.isSubscribed = false;
-    await user.save();
-    
-    res.json({ message: 'Subscription deactivated!', user: { id: user._id, isSubscribed: user.isSubscribed } });
-  } catch (error) {
-    res.status(500).json({ message: 'Operation failed.', error: error.message });
-  }
-});
+router.get('/plans', getPlans);
+router.post('/buy', verifyToken, buyPlanRules, handleValidation, buyPlan);
+router.get('/status', verifyToken, checkSubscription);
+router.post('/cancel', verifyToken, cancelSubscription);
+router.post('/subscribe', verifyToken, legacySubscribe);
 
 module.exports = router;

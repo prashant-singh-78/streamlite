@@ -1,0 +1,98 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | Skill Nova</title>
+    <link rel="stylesheet" href="/css/index.css">
+</head>
+<body style="background: var(--bg-sec);">
+    <nav>
+        <a href="/index.html" class="logo">SKILL NOVA</a>
+        <div class="nav-links">
+            <a href="/index.html">Back to Home</a>
+            <a href="/login.html" class="btn btn-outline">Login</a>
+        </div>
+    </nav>
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <h2 style="text-align: center; margin-bottom: 2rem;">Create Your Account</h2>
+            <form id="signup-form">
+                <div class="form-group">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="phoneNumber">Phone Number</label>
+                    <input type="tel" id="phoneNumber" placeholder="+91 9876543210">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Min 6 chars, letters & numbers" required>
+                </div>
+                <button type="submit" id="signup-btn" class="btn btn-primary" style="width: 100%;">Get Started</button>
+            </form>
+            <div id="message" style="margin-top: 1rem; text-align: center; font-size: 0.9rem;"></div>
+            <p style="text-align: center; margin-top: 2rem; color: var(--text-muted); font-size: 0.9rem;">
+                Already have an account? <a href="/login.html" style="color: var(--primary); text-decoration: none; font-weight: 500;">Login</a>
+            </p>
+        </div>
+    </div>
+    <script src="/context/authContext.js"></script>
+    <script src="/utils/toast.js"></script>
+    <script src="/utils/spinner.js"></script>
+    <script src="/utils/validation.js"></script>
+    <script src="/services/api.js"></script>
+    <script src="/utils/authGuard.js"></script>
+    <script>
+        (async () => {
+            await AuthGuard.redirectIfAuthenticated('/dashboard.html');
+        })();
+
+        document.getElementById('signup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('message');
+            const btn = document.getElementById('signup-btn');
+
+            if (!fullName) { Toast.error('Full name is required.'); return; }
+            if (!Validation.isValidEmail(email)) { Toast.error('Please enter a valid email.'); return; }
+            if (!Validation.isValidPassword(password)) {
+                Toast.error('Password must be 6+ chars with letters and numbers.');
+                return;
+            }
+            if (!Validation.isValidPhone(phoneNumber)) {
+                Toast.error('Please enter a valid phone number.');
+                return;
+            }
+
+            btn.disabled = true;
+            Spinner.show('Creating account...');
+            messageDiv.style.display = 'none';
+
+            try {
+                const response = await api.register({ fullName, email, password, phoneNumber });
+                Toast.success('Account created! Redirecting...');
+                AuthContext.setUser({ ...response.user, token: response.token });
+                setTimeout(() => window.location.href = '/dashboard.html', 1000);
+            } catch (err) {
+                messageDiv.style.color = '#ef4444';
+                messageDiv.innerText = err.message || 'Signup failed.';
+                messageDiv.style.display = 'block';
+                Toast.error(err.message || 'Signup failed.');
+            } finally {
+                btn.disabled = false;
+                Spinner.hide();
+            }
+        });
+    </script>
+</body>
+</html>
+

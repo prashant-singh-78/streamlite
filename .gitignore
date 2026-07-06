@@ -4,3 +4,6 @@ build/
 .env
 __pycache__/
 *.pyc
+*.log
+backend/server.err.log
+backend/server.out.log

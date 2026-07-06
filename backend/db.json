@@ -13,6 +13,48 @@
       "password": "$2b$10$92JQnNUALxgAa.P.Umx7F.OnyhX0mcoDsUOXjrDV6529FQ8NxnIni",
       "role": "user",
       "isSubscribed": false
+    },
+    {
+      "id": "1782029874953",
+      "email": "prashant@gmail.com",
+      "password": "$2b$10$VRujFRGymBwIcy.QLTHz1uzwaAjPI07d7wB2yMLOGDtF7sZ3Asdry",
+      "role": "user",
+      "isSubscribed": false
+    },
+    {
+      "id": "1782030854508",
+      "email": "prashasntg@gmail.com",
+      "password": "$2b$10$1J3koTYb4l95WUbG9Yh88eVMKsV44SPVf7EVDTAQpNr2X3/p9plHu",
+      "role": "user",
+      "isSubscribed": false
+    },
+    {
+      "id": "1782034238023",
+      "email": "test1782034237504@example.com",
+      "password": "$2b$10$pH1M3B1EGPxwnhrp1WYFNeQc8XPYWzDWZkpb/3yV7ZxS8XBQ29evK",
+      "role": "user",
+      "isSubscribed": false
+    },
+    {
+      "id": "1782034772419",
+      "email": "test1782054572.26515@example.com",
+      "password": "$2b$10$Hyf5d1UjAx8VuZtFiPAuq.lu35CFlJqsqHk1Cic8lAc9pilvKuCw.",
+      "role": "user",
+      "isSubscribed": true
+    },
+    {
+      "id": "1782034799683",
+      "email": "test1782034799539@example.com",
+      "password": "$2b$10$zXdUvdBDf1qf8Uj1pXtn0uu0Fn56S98XqA1npCAAv16JO3KTpKZB2",
+      "role": "user",
+      "isSubscribed": true
+    },
+    {
+      "id": "1782034873469",
+      "email": "test1782034873342@example.com",
+      "password": "$2b$10$zEFwzgnxzZ/D2gzOAMrUp.xpwlDxPzOEBWk.EDKvw2IKZk85KHa.a",
+      "role": "user",
+      "isSubscribed": true
     }
   ],
   "videos": [

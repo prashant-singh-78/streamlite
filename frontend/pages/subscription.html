@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skill Nova | Premium Access</title>
+    <link rel="stylesheet" href="/css/index.css">
+    <style>
+        .payment-modal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(5, 8, 15, 0.88);
+            backdrop-filter: blur(14px);
+            z-index: 3000;
+            padding: 1.5rem;
+        }
+
+        .payment-modal:target,
+        .payment-modal.active {
+            display: flex;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        .payment-panel {
+            width: min(920px, 100%);
+            background: linear-gradient(180deg, #1f1f1f 0%, #151515 100%);
+            border: 1px solid var(--border);
+            border-radius: 1.75rem;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+
+        .payment-panel-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1.5rem 1.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .close-payment {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 2rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .payment-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+        }
+
+        .payment-methods {
+            padding: 1.5rem 1.75rem 1.75rem;
+            display: grid;
+            gap: 0.85rem;
+        }
+
+        .method-card {
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1rem;
+            padding: 1rem 1.1rem;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .method-card.active {
+            border-color: var(--primary);
+            background: rgba(212, 175, 55, 0.08);
+            box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.18) inset;
+        }
+
+        .method-card strong {
+            display: block;
+            font-size: 1rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .method-card span {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .payment-side {
+            padding: 1.5rem 1.75rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .summary-box {
+            background: rgba(212, 175, 55, 0.08);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .pay-btn {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            border: none;
+            border-radius: 1rem;
+            background: var(--primary);
+            color: #ffffff;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .pay-btn:hover {
+            transform: translateY(-1px);
+            background: var(--primary-hover);
+        }
+
+        .pay-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .checkout-note {
+            margin-top: 1rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 820px) {
+            .payment-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .payment-side {
+                border-left: none;
+                border-top: 1px solid rgba(255, 255, 255, 0.06);
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">SKILL NOVA</div>
+        <div id="nav-actions">
+            <button class="btn btn-secondary" onclick="api.logout()">Logout</button>
+        </div>
+    </nav>
+    <div class="sub-wrapper">
+        <div class="bg-blob blob-1"></div>
+        <div class="bg-blob blob-2"></div>
+        
+        <div class="sub-header">
+            <h1>Elevate Your Experience</h1>
+            <p>Unlock our entire library of exclusive 4K content and premium features today.</p>
+        </div>
+
+        <div id="subscription-card" class="pricing-card-premium">
+            <span class="plan-badge">Most Popular</span>
+            <div class="plan-name" style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Premium Plan</div>
+            <div class="price-box">
+                <span class="amount">₹<span id="display-price">500</span></span>
+                <span class="period">/ Lifetime Access</span>
+            </div>
+            
+            <div class="features-list-premium">
+                <div class="feature-item">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    <span>Unlimited 4K Ultra HD playback</span>
+                </div>
+                <div class="feature-item">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    <span>Completely Ad-free Experience</span>
+                </div>
+                <div class="feature-item">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    <span>Offline Viewing Support</span>
+                </div>
+                <div class="feature-item">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    <span>Priority Support & Early Access</span>
+                </div>
+            </div>
+
+            <a id="subscribe-btn" href="https://wa.me/917627043971?text=Hello%2C%20I%20want%20to%20buy%20the%20Student%20Subscription." target="_blank" class="btn btn-primary" style="display: block; width: 100%; padding: 1.25rem; font-size: 1.1rem; border-radius: 1.25rem; text-align: center; cursor: pointer; text-decoration: none;">Subscribe Now</a>
+            <div id="message" style="margin-top: 1.5rem; text-align: center; font-size: 0.95rem; font-weight: 500;"></div>
+        </div>
+    </div>
+    <script src="/context/authContext.js"></script>
+    <script src="/utils/toast.js"></script>
+    <script src="/utils/spinner.js"></script>
+    <script src="/services/api.js"></script>
+    <script src="/utils/authGuard.js"></script>
+    <script>
+        const subBtn = document.getElementById('subscribe-btn');
+        const messageDiv = document.getElementById('message');
+
+        let planPrice = 500;
+        let currentUser = null;
+
+        async function init() {
+            try {
+                const settings = await api.getSettings();
+                planPrice = settings.price;
+                document.getElementById('display-price').innerText = settings.price;
+            } catch (err) {
+                console.error('Failed to load settings:', err);
+            }
+        }
+
+        (async () => {
+            currentUser = await AuthGuard.requireAuth();
+            if (!currentUser) return;
+
+            if (currentUser.isSubscribed) {
+                window.location.href = '/dashboard.html';
+                return;
+            }
+
+            await init();
+        })();
+    </script>
+</body>
+</html>
+

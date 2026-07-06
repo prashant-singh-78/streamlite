@@ -1,193 +1,106 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const path = require('path');
-const fs = require('fs');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
-// --- DATABASE PERSISTENCE ---
-const DB_FILE = path.join(__dirname, 'db.json');
+const connectDB = require('./config/database');
+const seedDatabase = require('./utils/seed');
+const { PORT, CORS_ORIGIN } = require('./config/env');
+const { apiLimiter, authLimiter } = require('./middleware/rateLimiter');
 
-let platformSettings = { price: 500, currency: '₹' };
-let users = [];
-let videos = [];
-
-const loadData = () => {
-  if (fs.existsSync(DB_FILE)) {
-    const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
-    users = data.users || [];
-    videos = data.videos || [];
-    platformSettings = data.platformSettings || { price: 500, currency: '₹' };
-  } else {
-    // Initial Seed Data
-    users = [{
-      id: 'admin-001',
-      email: 'admin@studentswill.com',
-      password: bcrypt.hashSync('admin123', 10), 
-      role: 'admin',
-      isSubscribed: true
-    }];
-    videos = [
-      { id: '1', title: 'Full-Stack Web Development: Introduction', description: 'Learn the basics of HTML, CSS, and JavaScript.', videoUrl: 'https://res.cloudinary.com/demo/video/upload/v1631234567/sample.mp4', thumbnailUrl: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80', duration: '12:45' },
-      { id: '2', title: 'Node.js & Express: Backend Mastery', description: 'Build powerful APIs and server-side applications.', videoUrl: 'https://res.cloudinary.com/demo/video/upload/v1631234567/sample.mp4', thumbnailUrl: 'https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=800&q=80', duration: '18:20' },
-      { id: '3', title: 'React.js: UI Components & State', description: 'Create dynamic, high-performance user interfaces.', videoUrl: 'https://res.cloudinary.com/demo/video/upload/v1631234567/sample.mp4', thumbnailUrl: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=800&q=80', duration: '15:10' },
-      { id: '4', title: 'Artificial Intelligence: Machine Learning 101', description: 'Introduction to neural networks and basics.', videoUrl: 'https://res.cloudinary.com/demo/video/upload/v1631234567/sample.mp4', thumbnailUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=800&q=80', duration: '22:30' },
-      { id: '5', title: 'Python for Data Science: Getting Started', description: 'Master Pandas, NumPy, and Matplotlib.', videoUrl: 'https://res.cloudinary.com/demo/video/upload/v1631234567/sample.mp4', thumbnailUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80', duration: '09:45' },
-      { id: '6', title: 'Cloud Computing: AWS Essentials', description: 'Deploy your applications to the cloud.', videoUrl: 'https://res.cloudinary.com/demo/video/upload/v1631234567/sample.mp4', thumbnailUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80', duration: '14:20' }
-    ];
-    saveData();
-  }
-};
-
-const saveData = () => {
-  const data = { users, videos, platformSettings };
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf8');
-};
-
-loadData();
+const authRoutes = require('./routes/auth');
+const subscriptionRoutes = require('./routes/subscription');
+const adminRoutes = require('./routes/admin');
+const videoRoutes = require('./routes/video');
+const User = require('./models/User');
+const PlatformSettings = require('./models/PlatformSettings');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_here';
 
-// Helper to find and update
-const findUser = (email) => users.find(u => u.email.toLowerCase() === email.toLowerCase());
-const findUserById = (id) => users.find(u => u.id === id);
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(cors({
+  origin: CORS_ORIGIN === '*' ? true : CORS_ORIGIN.split(','),
+  credentials: true
+}));
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use('/api', apiLimiter);
 
-// --- MIDDLEWARES ---
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Health check
+app.get('/api/health', async (req, res) => {
+  const settings = await PlatformSettings.findOne({ key: 'global' });
+  const usersCount = await User.countDocuments();
+  res.json({
+    status: 'ok',
+    usersCount,
+    currentPrice: settings?.price ?? 500
+  });
+});
 
-// Auth Middleware
-const verifyToken = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ message: 'No token provided' });
+// API routes
+app.use('/auth', authRoutes);
+app.use('/sub', subscriptionRoutes);
+app.use('/admin', adminRoutes);
+app.use('/video', videoRoutes);
+
+// Backward-compatible settings endpoint
+app.get('/settings', async (req, res) => {
+  const settings = await PlatformSettings.findOne({ key: 'global' });
+  res.json({
+    price: settings?.price ?? 500,
+    currency: settings?.currency ?? '₹'
+  });
+});
+
+// Serve frontend static files
+const frontendPath = path.resolve(__dirname, '../frontend');
+app.use(express.static(frontendPath));
+
+// Route HTML pages
+app.get('/', (req, res) => res.sendFile(path.join(frontendPath, 'pages/index.html')));
+app.get('/:page.html', (req, res) => {
+  res.sendFile(path.join(frontendPath, `pages/${req.params.page}.html`));
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({ message: 'Validation Error', errors: err.errors });
+  }
+  if (err.name === 'CastError') {
+    return res.status(400).json({ message: 'Invalid ID format' });
+  }
+  if (err.code === 11000) {
+    return res.status(409).json({ message: 'Duplicate field value entered' });
+  }
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ message: 'Invalid JSON payload' });
+  }
+
+  const statusCode = err.statusCode || 500;
+  const message = err.message || 'Internal server error';
+  
+  res.status(statusCode).json({
+    message,
+    error: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
+
+const startServer = async () => {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = findUserById(decoded.userId);
-    if (!req.user) return res.status(401).json({ message: 'Session expired.' });
-    next();
-  } catch (err) {
-    res.status(401).json({ message: 'Invalid token' });
+    await connectDB();
+    await seedDatabase();
+
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error.message);
+    process.exit(1);
   }
 };
 
-const checkSubscription = (req, res, next) => {
-  if (req.user.isSubscribed || req.user.role === 'admin') next();
-  else res.status(403).json({ message: 'Subscription required' });
-};
-
-const isAdmin = (req, res, next) => {
-  if (req.user.role === 'admin') next();
-  else res.status(403).json({ message: 'Admin access required' });
-};
-
-// --- API ROUTES ---
-
-// Health check
-app.get('/api/health', (req, res) => res.json({ 
-  status: 'ok', 
-  usersCount: users.length, 
-  currentPrice: platformSettings.price 
-}));
-
-// Auth
-app.post('/auth/signup', async (req, res) => {
-  const { email, password, role } = req.body;
-  if (findUser(email)) return res.status(400).json({ message: 'User exists' });
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-  let assignedRole = role || 'user';
-  if (email.toLowerCase() === 'admin@studentswill.com') assignedRole = 'admin';
-
-  const newUser = {
-    id: Date.now().toString(),
-    email,
-    password: hashedPassword,
-    role: assignedRole,
-    isSubscribed: assignedRole === 'admin'
-  };
-  users.push(newUser);
-  saveData();
-
-  const token = jwt.sign({ userId: newUser.id }, JWT_SECRET, { expiresIn: '1d' });
-  res.status(201).json({ token, user: { id: newUser.id, email, role: newUser.role, isSubscribed: newUser.isSubscribed } });
-});
-
-app.post('/auth/login', async (req, res) => {
-  const { email, password } = req.body;
-  const user = findUser(email);
-  if (!user) return res.status(400).json({ message: 'Invalid credentials' });
-
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
-
-  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1d' });
-  res.json({ token, user: { id: user.id, email, role: user.role, isSubscribed: user.isSubscribed } });
-});
-
-// Subscription
-app.post('/sub/subscribe', verifyToken, (req, res) => {
-  req.user.isSubscribed = true;
-  saveData();
-  res.json({ message: 'Subscribed!', user: req.user });
-});
-
-// Videos
-app.get('/video/all', verifyToken, (req, res) => {
-  const hasAccess = req.user.isSubscribed || req.user.role === 'admin';
-  const accessibleVideos = videos.map(v => {
-    if (hasAccess) return v;
-    const { videoUrl, ...publicData } = v;
-    return { ...publicData, isPremium: true };
-  });
-  res.json(accessibleVideos);
-});
-
-app.post('/video/upload', verifyToken, (req, res) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Admin only' });
-  const { title, description, videoUrl, thumbnailUrl, duration } = req.body;
-  const newVideo = { id: Date.now().toString(), title, description, videoUrl, thumbnailUrl, duration };
-  videos.push(newVideo);
-  saveData();
-  res.status(201).json(newVideo);
-});
-
-// Platform Settings
-app.get('/settings', (req, res) => res.json(platformSettings));
-
-app.post('/admin/settings', verifyToken, isAdmin, (req, res) => {
-  const { price } = req.body;
-  if (!price) return res.status(400).json({ message: "Price is required" });
-  platformSettings.price = price;
-  saveData();
-  res.json({ message: "Price updated", settings: platformSettings });
-});
-
-// Admin: Member Management
-app.post('/admin/add-member', verifyToken, isAdmin, async (req, res) => {
-  const { email, password, role, isSubscribed } = req.body;
-  if (findUser(email)) return res.status(400).json({ message: "Member already exists" });
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = {
-    id: Date.now().toString(),
-    email,
-    password: hashedPassword,
-    role: role || 'user',
-    isSubscribed: isSubscribed !== undefined ? isSubscribed : true
-  };
-  users.push(newUser);
-  saveData();
-  res.status(201).json({ message: "Member added", user: { email: newUser.email, role: newUser.role } });
-});
-
-// --- STATIC FILES ---
-const frontendPath = path.resolve(__dirname, '..');
-app.use(express.static(frontendPath));
-
-// --- START SERVER ---
-app.listen(PORT, () => {
-  console.log(`📡 Server running on http://localhost:${PORT}`);
-});
+startServer();

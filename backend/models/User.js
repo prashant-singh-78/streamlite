@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
+  fullName: {
+    type: String,
+    trim: true,
+    default: ''
+  },
   email: {
     type: String,
     required: true,
@@ -11,29 +16,44 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true
+    required: true,
+    minlength: 6
+  },
+  role: {
+    type: String,
+    enum: ['admin', 'student'],
+    default: 'student'
+  },
+  phoneNumber: {
+    type: String,
+    trim: true,
+    default: ''
   },
   isSubscribed: {
     type: Boolean,
     default: false
-  },
-  role: {
-    type: String,
-    enum: ['user', 'admin'],
-    default: 'user'
   }
 }, { timestamps: true });
 
-// Hash password before saving
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
+userSchema.pre('save', async function () {
+  if (!this.isModified('password')) return;
+  this.password = await bcrypt.hash(this.password, 12);
 });
 
-// Compare password method
-userSchema.methods.comparePassword = async function(candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
+userSchema.methods.toSafeObject = function () {
+  return {
+    id: this._id.toString(),
+    fullName: this.fullName,
+    email: this.email,
+    role: this.role,
+    phoneNumber: this.phoneNumber,
+    isSubscribed: this.isSubscribed,
+    createdAt: this.createdAt
+  };
 };
 
 module.exports = mongoose.model('User', userSchema);

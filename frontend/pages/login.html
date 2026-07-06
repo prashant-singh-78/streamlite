@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Skill Nova</title>
+    <link rel="stylesheet" href="/css/index.css">
+</head>
+<body style="background: var(--bg-sec);">
+    <nav>
+        <a href="/index.html" class="logo">SKILL NOVA</a>
+        <div class="nav-links">
+            <a href="/index.html">Back to Home</a>
+            <a href="/signup.html" class="btn btn-primary">Create Account</a>
+        </div>
+    </nav>
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <h2 style="text-align: center; margin-bottom: 2rem;">Welcome Back</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required>
+                </div>
+                <button type="submit" id="login-btn" class="btn btn-primary" style="width: 100%;">Sign In</button>
+            </form>
+            <div id="message" style="margin-top: 1rem; text-align: center; font-size: 0.9rem;"></div>
+            <p style="text-align: center; margin-top: 2rem; color: var(--text-muted); font-size: 0.9rem;">
+                Don't have an account? <a href="/signup.html" style="color: var(--primary); text-decoration: none; font-weight: 500;">Sign up</a>
+            </p>
+        </div>
+    </div>
+    <script src="/context/authContext.js"></script>
+    <script src="/utils/toast.js"></script>
+    <script src="/utils/spinner.js"></script>
+    <script src="/utils/validation.js"></script>
+    <script src="/services/api.js"></script>
+    <script src="/utils/authGuard.js"></script>
+    <script>
+        (async () => {
+            await AuthGuard.redirectIfAuthenticated('/dashboard.html');
+        })();
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('message');
+            const btn = document.getElementById('login-btn');
+
+            if (!Validation.isValidEmail(email)) {
+                Toast.error('Please enter a valid email address.');
+                return;
+            }
+
+            btn.disabled = true;
+            Spinner.show('Signing in...');
+            messageDiv.style.display = 'none';
+
+            try {
+                const response = await api.login(email, password);
+                Toast.success('Login successful! Redirecting...');
+                setTimeout(() => {
+                    window.location.href = response.user.role === 'admin' ? 'dashboard.html' : 'dashboard.html';
+                }, 800);
+            } catch (err) {
+                messageDiv.style.color = '#ef4444';
+                messageDiv.innerText = err.message || 'Invalid credentials.';
+                messageDiv.style.display = 'block';
+                Toast.error(err.message || 'Login failed.');
+            } finally {
+                btn.disabled = false;
+                Spinner.hide();
+            }
+        });
+    </script>
+</body>
+</html>
+

@@ -1,8 +1,8 @@
-# 🎬 Streamlite – Video Platform with Subscription System
+# Skill Nova – Video Platform with Subscription System
 
 ## 📌 Overview
 
-**Streamlite** is a full-stack web platform that allows users to upload and access videos through a subscription-based system. It is designed to provide a secure and user-friendly experience where only subscribed users can view premium content.
+**Skill Nova** is a full-stack web platform that allows users to upload and access videos through a subscription-based system. It is designed to provide a secure and user-friendly experience where only subscribed users can view premium content.
 
 ---
 
@@ -38,7 +38,7 @@ MySQL
 ## 📂 Project Structure
 
 ```id="3jq7y0"
-streamlite/
+skill-nova/
 │── frontend/
 │── backend/
 │── README.md
@@ -51,13 +51,13 @@ streamlite/
 1. Clone the repository:
 
 ```id="eqrf1z"
-git clone https://github.com/prashant-singh-78/streamlite.git
+git clone <your-repository-url>
 ```
 
 2. Navigate to the project folder:
 
 ```id="p9gq6j"
-cd streamlite
+cd skill-nova
 ```
 
 ---
