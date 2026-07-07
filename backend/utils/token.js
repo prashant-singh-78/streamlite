@@ -20,16 +20,14 @@ const getTokenFromRequest = (req) => {
 };
 
 const setAuthCookie = (res, token) => {
-  const isProduction = process.env.NODE_ENV === 'production';
-  const secureFlag = isProduction ? '; Secure' : '';
   res.setHeader(
     'Set-Cookie',
-    `${AUTH_COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}${secureFlag}`
+    `${AUTH_COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=${7 * 24 * 60 * 60}`
   );
 };
 
 const clearAuthCookie = (res) => {
-  res.setHeader('Set-Cookie', `${AUTH_COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`);
+  res.setHeader('Set-Cookie', `${AUTH_COOKIE_NAME}=; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=0`);
 };
 
 module.exports = {

@@ -1,3 +1,5 @@
+const API_BASE = "https://streamlite-1-ioyl.onrender.com";
+
 const api = {
   getAuthHeaders() {
     const token = AuthContext.getStoredToken();
@@ -11,7 +13,10 @@ const api = {
       ...options.headers
     };
 
-    const response = await fetch(endpoint, {
+    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE}${endpoint}`;
+    console.log(`[API Request] ${options.method || 'GET'} ${url}`);
+
+    const response = await fetch(url, {
       ...options,
       headers,
       credentials: 'include'
@@ -25,6 +30,7 @@ const api = {
     }
 
     if (!response.ok) {
+      console.error(`[API Error] ${options.method || 'GET'} ${url} - ${response.status}: ${data.message || 'Something went wrong'}`);
       throw new Error(data.message || 'Something went wrong');
     }
 
@@ -54,6 +60,7 @@ const api = {
   },
 
   async login(email, password) {
+    console.log(`[Auth] Attempting login for ${email}`);
     const data = await this.fetch('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password })
@@ -63,9 +70,16 @@ const api = {
   },
 
   async me() {
-    const data = await this.fetch('/auth/me');
-    if (data.user) AuthContext.setUser(data.user);
-    return data.user;
+    console.log(`[Auth] Fetching /auth/me to check session...`);
+    try {
+      const data = await this.fetch('/auth/me');
+      if (data.user) AuthContext.setUser(data.user);
+      return data.user;
+    } catch (err) {
+      console.warn(`[Auth] /auth/me failed. Clearing user state. Error:`, err.message);
+      AuthContext.clearUser();
+      return null;
+    }
   },
 
   async updateProfile(payload) {

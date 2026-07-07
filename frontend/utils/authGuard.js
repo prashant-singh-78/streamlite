@@ -1,17 +1,17 @@
-﻿const AuthGuard = {
-  async requireAuth(redirectTo = '/login.html') {
-    try {
-      const user = await api.me();
+const AuthGuard = {
+  async requireAuth(redirectTo = 'login.html') {
+    const user = await api.me();
+    if (user) {
       AuthContext.setUser(user);
       return user;
-    } catch {
+    } else {
       AuthContext.clearUser();
       window.location.href = redirectTo;
       return null;
     }
   },
 
-  async requireAdmin(redirectTo = '/dashboard.html') {
+  async requireAdmin(redirectTo = 'dashboard.html') {
     const user = await this.requireAuth();
     if (!user) return null;
     if (user.role !== 'admin') {
@@ -22,7 +22,7 @@
     return user;
   },
 
-  async requireStudent(redirectTo = '/dashboard.html') {
+  async requireStudent(redirectTo = 'dashboard.html') {
     const user = await this.requireAuth();
     if (!user) return null;
     if (user.role !== 'student') {
@@ -32,18 +32,16 @@
     return user;
   },
 
-  async redirectIfAuthenticated(destination = '/dashboard.html') {
-    try {
-      const user = await api.me();
-      if (user) {
-        AuthContext.setUser(user);
-        window.location.href = destination;
-        return true;
-      }
-    } catch {
+  async redirectIfAuthenticated(destination = 'dashboard.html') {
+    const user = await api.me();
+    if (user) {
+      AuthContext.setUser(user);
+      window.location.href = destination;
+      return true;
+    } else {
       AuthContext.clearUser();
+      return false;
     }
-    return false;
   }
 };
 

@@ -1,17 +1,17 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up | Skill Nova</title>
-    <link rel="stylesheet" href="/css/index.css">
+    <link rel="stylesheet" href="../css/index.css">
 </head>
 <body style="background: var(--bg-sec);">
     <nav>
-        <a href="/index.html" class="logo">SKILL NOVA</a>
+        <a href="index.html" class="logo">SKILL NOVA</a>
         <div class="nav-links">
-            <a href="/index.html">Back to Home</a>
-            <a href="/login.html" class="btn btn-outline">Login</a>
+            <a href="index.html">Back to Home</a>
+            <a href="login.html" class="btn btn-outline">Login</a>
         </div>
     </nav>
     <div class="auth-wrapper">
@@ -38,16 +38,16 @@
             </form>
             <div id="message" style="margin-top: 1rem; text-align: center; font-size: 0.9rem;"></div>
             <p style="text-align: center; margin-top: 2rem; color: var(--text-muted); font-size: 0.9rem;">
-                Already have an account? <a href="/login.html" style="color: var(--primary); text-decoration: none; font-weight: 500;">Login</a>
+                Already have an account? <a href="login.html" style="color: var(--primary); text-decoration: none; font-weight: 500;">Login</a>
             </p>
         </div>
     </div>
-    <script src="/context/authContext.js"></script>
-    <script src="/utils/toast.js"></script>
-    <script src="/utils/spinner.js"></script>
-    <script src="/utils/validation.js"></script>
-    <script src="/services/api.js"></script>
-    <script src="/utils/authGuard.js"></script>
+    <script src="../context/authContext.js"></script>
+    <script src="../utils/toast.js"></script>
+    <script src="../utils/spinner.js"></script>
+    <script src="../utils/validation.js"></script>
+    <script src="../services/api.js"></script>
+    <script src="../utils/authGuard.js"></script>
     <script>
         (async () => {
             await AuthGuard.redirectIfAuthenticated('/dashboard.html');
@@ -55,6 +55,7 @@
 
         document.getElementById('signup-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log('[Signup] Form submitted');
             const fullName = document.getElementById('fullName').value.trim();
             const email = document.getElementById('email').value.trim();
             const phoneNumber = document.getElementById('phoneNumber').value.trim();
@@ -78,11 +79,15 @@
             messageDiv.style.display = 'none';
 
             try {
-                const response = await api.register({ fullName, email, password, phoneNumber });
+                // Call api.signup as requested instead of raw register
+                console.log('[Signup] Calling api.signup...');
+                const response = await api.signup(email, password, 'student', { fullName, phoneNumber });
+                console.log('[Signup] Success:', response);
                 Toast.success('Account created! Redirecting...');
                 AuthContext.setUser({ ...response.user, token: response.token });
-                setTimeout(() => window.location.href = '/dashboard.html', 1000);
+                setTimeout(() => window.location.href = 'dashboard.html', 1000);
             } catch (err) {
+                console.error('[Signup] Error:', err);
                 messageDiv.style.color = '#ef4444';
                 messageDiv.innerText = err.message || 'Signup failed.';
                 messageDiv.style.display = 'block';

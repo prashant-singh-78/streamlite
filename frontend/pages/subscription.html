@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skill Nova | Premium Access</title>
-    <link rel="stylesheet" href="/css/index.css">
+    <link rel="stylesheet" href="../css/index.css">
     <style>
         .payment-modal {
             position: fixed;
@@ -201,11 +201,11 @@
             <div id="message" style="margin-top: 1.5rem; text-align: center; font-size: 0.95rem; font-weight: 500;"></div>
         </div>
     </div>
-    <script src="/context/authContext.js"></script>
-    <script src="/utils/toast.js"></script>
-    <script src="/utils/spinner.js"></script>
-    <script src="/services/api.js"></script>
-    <script src="/utils/authGuard.js"></script>
+    <script src="../context/authContext.js"></script>
+    <script src="../utils/toast.js"></script>
+    <script src="../utils/spinner.js"></script>
+    <script src="../services/api.js"></script>
+    <script src="../utils/authGuard.js"></script>
     <script>
         const subBtn = document.getElementById('subscribe-btn');
         const messageDiv = document.getElementById('message');
@@ -228,7 +228,7 @@
             if (!currentUser) return;
 
             if (currentUser.isSubscribed) {
-                window.location.href = '/dashboard.html';
+                window.location.href = 'dashboard.html';
                 return;
             }
 

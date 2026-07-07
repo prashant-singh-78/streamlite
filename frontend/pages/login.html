@@ -1,17 +1,17 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | Skill Nova</title>
-    <link rel="stylesheet" href="/css/index.css">
+    <link rel="stylesheet" href="../css/index.css">
 </head>
 <body style="background: var(--bg-sec);">
     <nav>
-        <a href="/index.html" class="logo">SKILL NOVA</a>
+        <a href="index.html" class="logo">SKILL NOVA</a>
         <div class="nav-links">
-            <a href="/index.html">Back to Home</a>
-            <a href="/signup.html" class="btn btn-primary">Create Account</a>
+            <a href="index.html">Back to Home</a>
+            <a href="signup.html" class="btn btn-primary">Create Account</a>
         </div>
     </nav>
     <div class="auth-wrapper">
@@ -24,22 +24,22 @@
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required>
+                    <input type="password" id="password" placeholder="••••••••" required>
                 </div>
                 <button type="submit" id="login-btn" class="btn btn-primary" style="width: 100%;">Sign In</button>
             </form>
             <div id="message" style="margin-top: 1rem; text-align: center; font-size: 0.9rem;"></div>
             <p style="text-align: center; margin-top: 2rem; color: var(--text-muted); font-size: 0.9rem;">
-                Don't have an account? <a href="/signup.html" style="color: var(--primary); text-decoration: none; font-weight: 500;">Sign up</a>
+                Don't have an account? <a href="signup.html" style="color: var(--primary); text-decoration: none; font-weight: 500;">Sign up</a>
             </p>
         </div>
     </div>
-    <script src="/context/authContext.js"></script>
-    <script src="/utils/toast.js"></script>
-    <script src="/utils/spinner.js"></script>
-    <script src="/utils/validation.js"></script>
-    <script src="/services/api.js"></script>
-    <script src="/utils/authGuard.js"></script>
+    <script src="../context/authContext.js"></script>
+    <script src="../utils/toast.js"></script>
+    <script src="../utils/spinner.js"></script>
+    <script src="../utils/validation.js"></script>
+    <script src="../services/api.js"></script>
+    <script src="../utils/authGuard.js"></script>
     <script>
         (async () => {
             await AuthGuard.redirectIfAuthenticated('/dashboard.html');
@@ -47,6 +47,7 @@
 
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log('[Login] Form submitted');
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const messageDiv = document.getElementById('message');
