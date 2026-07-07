@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | Skill Nova</title>
-    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="css/index.css">
     <style>
         .dashboard-container { display: flex; min-height: 100vh; }
         .sidebar { width: 280px; background: var(--bg-sec); border-right: 1px solid var(--border); padding: 2rem; position: sticky; top: 70px; height: calc(100vh - 70px); }
@@ -187,12 +187,12 @@
         </div>
     </div>
 
-    <script src="../context/authContext.js"></script>
-    <script src="../utils/toast.js"></script>
-    <script src="../utils/spinner.js"></script>
-    <script src="../utils/validation.js"></script>
-    <script src="../services/api.js"></script>
-    <script src="../utils/authGuard.js"></script>
+    <script src="context/authContext.js"></script>
+    <script src="utils/toast.js"></script>
+    <script src="utils/spinner.js"></script>
+    <script src="utils/validation.js"></script>
+    <script src="services/api.js"></script>
+    <script src="utils/authGuard.js"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const shouldOpenCourse = urlParams.get('openCourse') === '1';

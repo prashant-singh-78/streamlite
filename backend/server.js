@@ -58,9 +58,9 @@ const frontendPath = path.resolve(__dirname, '../frontend');
 app.use(express.static(frontendPath));
 
 // Route HTML pages
-app.get('/', (req, res) => res.sendFile(path.join(frontendPath, 'pages/index.html')));
+app.get('/', (req, res) => res.sendFile(path.join(frontendPath, 'index.html')));
 app.get('/:page.html', (req, res) => {
-  res.sendFile(path.join(frontendPath, `pages/${req.params.page}.html`));
+  res.sendFile(path.join(frontendPath, `${req.params.page}.html`));
 });
 
 // Global error handler
